@@ -42,6 +42,12 @@ def make_ee_sim_env(task_name):
         env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
     elif 'sim_insertion' in task_name:
+        xml_path = os.path.join(XML_DIR, f'bimanual_viperx_ee_open_insert.xml')
+        physics = mujoco.Physics.from_xml_path(xml_path)
+        task = InsertionEETask(random=False)
+        env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
+                                  n_sub_steps=None, flat_observation=False)
+    elif 'sim_insertion' in task_name:
         xml_path = os.path.join(XML_DIR, f'bimanual_viperx_ee_insertion.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
         task = InsertionEETask(random=False)

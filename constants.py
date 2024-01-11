@@ -11,6 +11,15 @@ SIM_TASK_CONFIGS = {
         'camera_names': ['top', 'left_wrist', 'right_wrist']
     },
 
+    
+      'sim_open_insert_scripted':{
+        'dataset_dir': DATA_DIR + '/sim_open_insert_scripted',
+        'num_episodes': 5,
+        'episode_len': 400,
+        'camera_names': ['top', 'left_wrist', 'right_wrist']
+    },
+      
+      
     'sim_transfer_cube_human':{
         'dataset_dir': DATA_DIR + '/sim_transfer_cube_human',
         'num_episodes': 50,

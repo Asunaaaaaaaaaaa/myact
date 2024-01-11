@@ -8,7 +8,7 @@ import h5py
 from constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN, SIM_TASK_CONFIGS
 from ee_sim_env import make_ee_sim_env
 from sim_env import make_sim_env, BOX_POSE
-from scripted_policy import PickAndTransferPolicy, InsertionPolicy
+from scripted_policy import PickAndTransferPolicy, InsertionPolicy,OpenAndInsertPolicy
 
 import IPython
 e = IPython.embed
@@ -37,8 +37,11 @@ def main(args):
     camera_names = SIM_TASK_CONFIGS[task_name]['camera_names']
     if task_name == 'sim_transfer_cube_scripted':
         policy_cls = PickAndTransferPolicy
+    elif task_name == 'sim_open_insert_scripted':
+        policy_cls = OpenAndInsertPolicy
     elif task_name == 'sim_insertion_scripted':
         policy_cls = InsertionPolicy
+
     elif task_name == 'sim_transfer_cube_scripted_mirror':
         policy_cls = PickAndTransferPolicy
     else:
