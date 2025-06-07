@@ -1,85 +1,35 @@
-# Imitation Learning algorithms and Co-training for Mobile ALOHA
+I'm trying to achieve a new task to help my work
 
 
-#### Project Website: https://mobile-aloha.github.io/
 
-This repo contains the implementation of ACT, Diffusion Policy and VINN, together with 2 simulated environments:
-Transfer Cube and Bimanual Insertion. You can train and evaluate them in sim or real.
-For real, you would also need to install [Mobile ALOHA](https://github.com/MarkFzp/mobile-aloha). This repo is forked from the [ACT repo](https://github.com/tonyzhaozh/act).
+-在将ACT应用于新环境时，块大小是最重要的参数。一个块应该对应~1秒的挂钟机器人运动。
 
-### Updates:
-You can find all scripted/human demo for simulated environments [here](https://drive.google.com/drive/folders/1gPR03v05S1xiInoVJn7G7VJ9pDCnxq9O?usp=share_link).
+-高KL权重（10或100），或没有CVAE编码器的训练。
 
+-考虑删除temporal_agg，并增加这里的查询频率，使其与块大小相同。即，每个块都被完全执行。
 
-### Repo Structure
-- ``imitate_episodes.py`` Train and Evaluate ACT
-- ``policy.py`` An adaptor for ACT policy
-- ``detr`` Model definitions of ACT, modified from DETR
-- ``sim_env.py`` Mujoco + DM_Control environments with joint space control
-- ``ee_sim_env.py`` Mujoco + DM_Control environments with EE space control
-- ``scripted_policy.py`` Scripted policies for sim environments
-- ``constants.py`` Constants shared across files
-- ``utils.py`` Utils such as data loading and helper functions
-- ``visualize_episodes.py`` Save videos from a .hdf5 dataset
+-训练时间很长（在事情趋于平稳之后，见图）
+
+-尽量增加批量大小，并相应增加lr。例如，批次大小为64，学习率为5e-5，而批次大小为8，学习率为1e-5
+
+-每个摄像头都有独立的主干（需要修改代码，见此提交）
+
+- L1损耗> L2损耗（不够精确）
+
+- Abs位置控制> delta/速度控制（难以恢复）
+
+-尝试多个检查点
 
 
-### Installation
 
-    conda create -n aloha python=3.8.10
-    conda activate aloha
-    pip install torchvision
-    pip install torch
-    pip install pyquaternion
-    pip install pyyaml
-    pip install rospkg
-    pip install pexpect
-    pip install mujoco==2.3.7
-    pip install dm_control==1.0.14
-    pip install opencv-python
-    pip install matplotlib
-    pip install einops
-    pip install packaging
-    pip install h5py
-    pip install ipython
-    cd act/detr && pip install -e .
+对于现实世界的实验：
 
-- also need to install https://github.com/ARISE-Initiative/robomimic/tree/r2d2 (note the r2d2 branch) for Diffusion Policy by `pip install -e .`
+-训练更长的时间（5k - 8k步，特别是在多摄像头的情况下）
 
-### Example Usages
-
-To set up a new terminal, run:
-
-    conda activate aloha
-    cd <path to act repo>
-
-### Simulated experiments (LEGACY table-top ALOHA environments)
-
-We use ``sim_transfer_cube_scripted`` task in the examples below. Another option is ``sim_insertion_scripted``.
-To generated 50 episodes of scripted data, run:
-
-    python3 record_sim_episodes.py --task_name sim_transfer_cube_scripted --dataset_dir <data save dir> --num_episodes 50
-
-To can add the flag ``--onscreen_render`` to see real-time rendering.
-To visualize the simulated episodes after it is collected, run
-
-    python3 visualize_episodes.py --dataset_dir <data save dir> --episode_idx 0
-
-Note: to visualize data from the mobile-aloha hardware, use the visualize_episodes.py from https://github.com/MarkFzp/mobile-aloha
-
-To train ACT:
-    
-    # Transfer Cube task
-    python3 imitate_episodes.py --task_name sim_transfer_cube_scripted --ckpt_dir <ckpt dir> --policy_class ACT --kl_weight 10 --chunk_size 100 --hidden_dim 512 --batch_size 8 --dim_feedforward 3200 --num_epochs 2000  --lr 1e-5 --seed 0
+—如果推理太慢—>机器人移动缓慢：禁用temporal_agg并增加此处的查询频率。我们试过最高20个。
 
 
-To evaluate the policy, run the same command but add ``--eval``. This loads the best validation checkpoint.
-The success rate should be around 90% for transfer cube, and around 50% for insertion.
-To enable temporal ensembling, add flag ``--temporal_agg``.
-Videos will be saved to ``<ckpt_dir>`` for each rollout.
-You can also add ``--onscreen_render`` to see real-time rendering during evaluation.
 
-For real-world data where things can be harder to model, train for at least 5000 epochs or 3-4 times the length after the loss has plateaued.
-Please refer to [tuning tips](https://docs.google.com/document/d/1FVIZfoALXg_ZkYKaYVh-qOlaXveq5CtvJHXkY25eYhs/edit?usp=sharing) for more info.
 
-### [ACT tuning tips](https://docs.google.com/document/d/1FVIZfoALXg_ZkYKaYVh-qOlaXveq5CtvJHXkY25eYhs/edit?usp=sharing)
-TL;DR: if your ACT policy is jerky or pauses in the middle of an episode, just train for longer! Success rate and smoothness can improve way after loss plateaus.
+
+
