@@ -45,7 +45,7 @@ def make_sim_env(task_name):
     elif 'sim_open_insert' in task_name:
         xml_path = os.path.join(XML_DIR, f'bimanual_viperx_open_insert.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
-        task = InsertionTask(random=False)
+        task = Open_InsertionTask(random=False)
         env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
         

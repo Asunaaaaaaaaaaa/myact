@@ -1,48 +1,40 @@
 <mujoco>
-    <include file="scene.xml"/>
-    <include file="vx300s_dependencies.xml"/>
+  <include file="scene.xml"/>
+  <include file="vx300s_dependencies.xml"/>
 
-    <equality>
-        <weld body1="mocap_left" body2="vx300s_left/gripper_link" solref="0.01 1" solimp=".25 .25 0.001" />
-        <weld body1="mocap_right" body2="vx300s_right/gripper_link" solref="0.01 1" solimp=".25 .25 0.001" />
-    </equality>
+  <worldbody>
+    <include file="vx300s_left.xml"/>
+    <include file="vx300s_right.xml"/>
 
+    <body name="cover" pos="0.4 0.5 0.1">
+      <joint name="cover_joint" type="hinge" axis="0 1 0" pos="0 0 0" range="-1.57 0"/>
+      <inertial pos="0 0 0" mass="0.02" diaginertia="0.0001 0.0001 0.0001"/>
+      <geom name="cover_geom" type="box" size="0.05 0.02 0.005" pos="0 0 0"
+            rgba="0.7 0.7 0.7 1" solimp="0.25 0.25 0.001" solref="0.01 1" friction="1 0.005 0.0001"/>
+    </body>
 
-    <worldbody>
-        <include file="vx300s_left.xml" />
-        <include file="vx300s_right.xml" />
+    <body name="charging_gun" pos="0.3 0.5 0.05">
+      <joint name="charging_gun_joint" type="free" frictionloss="0.01"/>
+      <inertial pos="0 0 0" mass="0.2" diaginertia="0.005 0.005 0.005"/>
+      <geom name="gun_geom" type="box" size="0.02 0.02 0.06" pos="0 0 0"
+            rgba="0.2 0.2 0.2 1" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001"/>
+    </body>
 
-        <body mocap="true" name="mocap_left" pos="0.095 0.50 0.425">
-            <site pos="0 0 0" size="0.003 0.003 0.03" type="box" name="mocap_left_site1" rgba="1 0 0 1"/>
-            <site pos="0 0 0" size="0.003 0.03 0.003" type="box" name="mocap_left_site2" rgba="1 0 0 1"/>
-            <site pos="0 0 0" size="0.03 0.003 0.003" type="box" name="mocap_left_site3" rgba="1 0 0 1"/>
-        </body>
-        <body mocap="true" name="mocap_right" pos="-0.095 0.50 0.425">
-            <site pos="0 0 0" size="0.003 0.003 0.03" type="box" name="mocap_right_site1" rgba="1 0 0 1"/>
-            <site pos="0 0 0" size="0.003 0.03 0.003" type="box" name="mocap_right_site2" rgba="1 0 0 1"/>
-            <site pos="0 0 0" size="0.03 0.003 0.003" type="box" name="mocap_right_site3" rgba="1 0 0 1"/>
-        </body>
+    <body name="port_inner" pos="0.45 0.5 0.1">
+      <joint name="port_inner_joint" type="free"/>
+      <geom name="port_inner" type="cylinder" size="0.01 0.02" pos="0 0 0" rgba="0 0 1 0.5"/>
+    </body>
+  </worldbody>
 
-        <body name="box" pos="0.2 0.5 0.05">
-            <joint name="red_box_joint" type="free" frictionloss="0.01" />
-            <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002" />
-            <geom condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001" pos="0 0 0" size="0.02 0.02 0.02" type="box" name="red_box" rgba="1 0 0 1" />
-        </body>
+  <equality>
+    <weld body1="mocap_right" body2="cover" solref="0.01 1" solimp="0.25 0.25 0.001"/>
+    <weld body1="mocap_left"  body2="charging_gun" solref="0.01 1" solimp="0.25 0.25 0.001"/>
+  </equality>
 
-    </worldbody>
-
-    <actuator>
-        <position ctrllimited="true" ctrlrange="0.021 0.057" joint="vx300s_left/left_finger" kp="200"  user="1"/>
-        <position ctrllimited="true" ctrlrange="-0.057 -0.021" joint="vx300s_left/right_finger" kp="200"  user="1"/>
-
-        <position ctrllimited="true" ctrlrange="0.021 0.057" joint="vx300s_right/left_finger" kp="200"  user="1"/>
-        <position ctrllimited="true" ctrlrange="-0.057 -0.021" joint="vx300s_right/right_finger" kp="200"  user="1"/>
-
-    </actuator>
-
-    <keyframe>
-        <key qpos="0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0.2 0.5 0.05 1 0 0 0"/>
-    </keyframe>
-
-
+  <actuator>
+    <position joint="vx300s_left/left_finger"  ctrllimited="true" ctrlrange="0.021 0.057" kp="200" user="1"/>
+    <position joint="vx300s_left/right_finger" ctrllimited="true" ctrlrange="-0.057 -0.021" kp="200" user="1"/>
+    <position joint="vx300s_right/left_finger" ctrllimited="true" ctrlrange="0.021 0.057" kp="200" user="1"/>
+    <position joint="vx300s_right/right_finger"ctrllimited="true" ctrlrange="-0.057 -0.021" kp="200" user="1"/>
+  </actuator>
 </mujoco>

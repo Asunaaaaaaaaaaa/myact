@@ -312,6 +312,24 @@ def sample_box_pose():
     cube_quat = np.array([1, 0, 0, 0])
     return np.concatenate([cube_position, cube_quat])
 
+import numpy as np
+
+#sample
+
+def sample_cover_pose():
+    # 随机一个旋转角度
+    hinge_angle = np.random.uniform(-1.57, 0)
+    #无旋转
+    return np.array([0, 0, 0, 1, 0, 0, hinge_angle])
+
+def sample_gun_pose():
+    # 随机平移
+    pos = np.random.uniform(low=[0.28, 0.48, 0.04], high=[0.32, 0.52, 0.06])
+    # 随机四元数旋转
+    quat = np.random.randn(4)
+    quat /= np.linalg.norm(quat)
+    return np.concatenate([pos, quat])
+
 def sample_insertion_pose():
     # Peg
     x_range = [0.1, 0.2]

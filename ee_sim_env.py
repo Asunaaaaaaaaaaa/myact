@@ -41,10 +41,10 @@ def make_ee_sim_env(task_name):
         task = TransferCubeEETask(random=False)
         env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
-    elif 'sim_insertion' in task_name:
+    elif 'sim_open_insert' in task_name:
         xml_path = os.path.join(XML_DIR, f'bimanual_viperx_ee_open_insert.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
-        task = InsertionEETask(random=False)
+        task = Open_InsertionTask(random=False)
         env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
     elif 'sim_insertion' in task_name:
@@ -202,6 +202,67 @@ class TransferCubeEETask(BimanualViperXEETask):
         if touch_left_gripper and not touch_table: # successful transfer
             reward = 4
         return reward
+    
+    
+#右臂：按压充电口盖子；
+#左臂：抓取充电枪，移动并插入打开的充电口。
+
+from utils import sample_cover_pose, sample_gun_pose
+
+class Open_InsertionTask(BimanualViperXEETask):
+    def __init__(self, random=None):
+        super().__init__(random=random)
+        self.max_reward = 4
+
+    def initialize_episode(self, physics):
+        # reset robot joints and mocap
+        self.initialize_robots(physics)
+
+        # randomize cover (lid) pose
+        cover_joint_id = physics.model.name2id('cover_joint', 'joint')
+        cover_pose = sample_cover_pose()
+        idx = 16 + (cover_joint_id - 16) * 7
+        np.copyto(physics.data.qpos[idx:idx+7], cover_pose)
+
+        # randomize charging gun pose
+        gun_joint_id = physics.model.name2id('charging_gun_joint', 'joint')
+        gun_pose = sample_gun_pose()
+        idx = 16 + (gun_joint_id - 16) * 7
+        np.copyto(physics.data.qpos[idx:idx+7], gun_pose)
+
+        super().initialize_episode(physics)
+
+    @staticmethod
+    def get_env_state(physics):
+        # return array of all object qpos after robot (slice off first 16)
+        return physics.data.qpos.copy()[16:]
+
+    def get_reward(self, physics):
+        # collect contact pairs
+        contacts = set()
+        for i in range(physics.data.ncon):
+            g1 = physics.model.id2name(physics.data.contact[i].geom1, 'geom')
+            g2 = physics.model.id2name(physics.data.contact[i].geom2, 'geom')
+            contacts.add((g1, g2))
+            contacts.add((g2, g1))
+
+        # metrics
+        touch_cover   = ('cover_geom', 'vx300s_right/10_right_gripper_finger') in contacts
+        touch_gun     = ('gun_geom', 'vx300s_left/10_left_gripper_finger') in contacts
+        cover_opened  = physics.data.qpos[physics.model.name2id('cover_joint', 'joint')] < -0.5
+        inserted      = ('gun_geom', 'port_inner') in contacts
+
+        reward = 0
+        if touch_cover:
+            reward = 1              # right arm pressed cover
+        if touch_cover and touch_gun:
+            reward = 2              # both arms engaged
+        if touch_cover and touch_gun and cover_opened:
+            reward = 3              # cover opened & gun held
+        if inserted:
+            reward = 4              # gun inserted
+        return reward
+
 
 
 class InsertionEETask(BimanualViperXEETask):
